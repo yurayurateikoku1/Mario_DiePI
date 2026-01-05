@@ -21,6 +21,7 @@ namespace engine::core
 {
     class Time;
     class Config;
+    class Context;
     /// @brief 主应用程序,初始化SDL,运行主循环
     class GameApp final
     {
@@ -36,6 +37,7 @@ namespace engine::core
         std::unique_ptr<engine::render::Camera> _camera{nullptr};
         std::unique_ptr<engine::core::Config> _config{nullptr};
         std::unique_ptr<engine::input::InputManager> _input_manager{nullptr};
+        std::unique_ptr<engine::core::Context> _context{nullptr};
 
     public:
         GameApp();
@@ -60,6 +62,9 @@ namespace engine::core
         [[nodiscard]] bool initRenderer();
         [[nodiscard]] bool initCamera();
         [[nodiscard]] bool initInputManager();
+        [[nodiscard]] bool initContext();
+
+        void testRenderer();
     };
 
 }

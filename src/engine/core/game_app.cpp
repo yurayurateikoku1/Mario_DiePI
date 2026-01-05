@@ -3,13 +3,18 @@
 #include <SDL3_mixer/SDL_mixer.h>
 #include <spdlog/spdlog.h>
 #include "time.h"
+#include "context.h"
 #include "../resource/resource_manager.h"
 #include "../render/camera.h"
 #include "../render/render.h"
 #include "../input/input_manager.h"
+#include "../object/game_object.h"
+#include "../component/transform_component.h"
+#include "../component/sprite_component.h"
 #include "config.h"
 namespace engine::core
 {
+    engine::object::GameObject game_object("test_game_object");
     GameApp::GameApp()
     {
     }
@@ -155,6 +160,20 @@ namespace engine::core
         return true;
     }
 
+    bool GameApp::initContext()
+    {
+        try
+        {
+            _context = std::make_unique<engine::core::Context>(*_input_manager, *_renderer, *_resource_manager, *_camera);
+        }
+        catch (const std::exception &e)
+        {
+            spdlog::error("Context init failed: {},{},{}", e.what(), __FILE__, __LINE__);
+            return false;
+        }
+        return true;
+    }
+
     bool GameApp::init()
     {
         spdlog::info("GameApp init ...");
@@ -186,6 +205,10 @@ namespace engine::core
         {
             return false;
         }
+        if (!initContext())
+        {
+            return false;
+        }
 
         _is_running = true;
         spdlog::info("GameApp init success");
@@ -200,7 +223,7 @@ namespace engine::core
             _is_running = false;
             return;
         }
-        }
+    }
 
     void GameApp::update([[maybe_unused]] float dt)
     {
@@ -208,6 +231,10 @@ namespace engine::core
 
     void GameApp::render()
     {
+        _renderer->clearScreen();
+        testRenderer();
+        game_object.render(*_context);
+        _renderer->present();
     }
 
     void GameApp::close()
@@ -227,5 +254,9 @@ namespace engine::core
         SDL_Quit();
         _is_running = false;
     }
-
+    void GameApp::testRenderer()
+    {
+        game_object.addComponent<engine::component::TransformComponent>(glm::vec2(100.0f, 100.0f));
+        game_object.addComponent<engine::component::SpriteComponent>("assets/textures/Props/big-crate.png", *_resource_manager, engine::utils::Alignment::CENTER);
+    }
 }

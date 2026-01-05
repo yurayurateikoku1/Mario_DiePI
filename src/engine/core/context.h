@@ -1,0 +1,45 @@
+#pragma once
+namespace engine::input
+{
+    class InputManager;
+}
+namespace engine::render
+{
+    class Renderer;
+    class Camera;
+}
+
+namespace engine::resource
+{
+    class ResourceManager;
+}
+
+namespace engine::core
+{
+    /// @brief 持有对核心引擎模块引用的上下文对象
+    /// 简化依赖注入，传递Context来获取引擎的各个模块
+    class Context final
+    {
+    private:
+        /// @brief 输入管理器
+        engine::input::InputManager &_input_manager;
+        /// @brief 渲染器
+        engine::render::Renderer &_renderer;
+        /// @brief 资源管理器
+        engine::resource::ResourceManager &_resource_manager;
+        /// @brief 摄像机
+        engine::render::Camera &_camera;
+
+    public:
+        Context(engine::input::InputManager &input_manager, engine::render::Renderer &render, engine::resource::ResourceManager &resource_manager, engine::render::Camera &camera);
+        Context(const Context &) = delete;
+        Context(Context &&) = delete;
+        Context &operator=(const Context &) = delete;
+        Context &operator=(Context &&) = delete;
+
+        engine::input::InputManager &getInputManager() const { return _input_manager; }
+        engine::render::Renderer &getRender() const { return _renderer; }
+        engine::resource::ResourceManager &getResourceManager() const { return _resource_manager; }
+        engine::render::Camera &getCamera() const { return _camera; }
+    };
+}

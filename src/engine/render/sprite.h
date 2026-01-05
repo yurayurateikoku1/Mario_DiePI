@@ -26,7 +26,7 @@ namespace engine::render
         const std::optional<SDL_Rect> &getSourceRect() const { return _source_rect; }
         bool isFlipped() const { return _is_flipped; }
         void setTextureId(const std::string &texture_id) { _texture_id = texture_id; }
-        void setSourceRect(std::optional<SDL_Rect> &source_rect) { _source_rect = source_rect; }
+        void setSourceRect(const std::optional<SDL_Rect> &source_rect) { _source_rect = source_rect; }
         void setFlipped(bool is_flipped) { _is_flipped = is_flipped; }
     };
 

@@ -81,8 +81,8 @@ void engine::input::InputManager::processEvent(const SDL_Event &event)
         SDL_Scancode scancode = event.key.scancode;
         bool is_down = event.key.down;
         bool is_repeat = event.key.repeat;
-        auto it = _scancode2action_map.find(scancode);
-        if (it != _scancode2action_map.end())
+        auto it = _input2action_map.find(scancode);
+        if (it != _input2action_map.end())
         {
             const std::vector<std::string> &associated_actions = it->second;
             for (const std::string &action_name : associated_actions)
@@ -97,8 +97,8 @@ void engine::input::InputManager::processEvent(const SDL_Event &event)
     {
         Uint8 mouse_button = event.button.button;
         bool is_down_mouse = event.button.down;
-        auto it_mouse = _mousebutton2action_map.find(mouse_button);
-        if (it_mouse != _mousebutton2action_map.end())
+        auto it_mouse = _input2action_map.find(mouse_button);
+        if (it_mouse != _input2action_map.end())
         {
             const std::vector<std::string> &associated_actions = it_mouse->second;
             for (const std::string &action_name : associated_actions)
@@ -131,8 +131,7 @@ void engine::input::InputManager::initMappings(const engine::core::Config *confi
         throw std::runtime_error("Config is null");
     }
     _action2keyname_map = config->_input_mappings;
-    _scancode2action_map.clear();
-    _mousebutton2action_map.clear();
+    _input2action_map.clear();
     _action_states.clear();
 
     if (_action2keyname_map.find("MouseLeftClick") == _action2keyname_map.end())
@@ -151,16 +150,16 @@ void engine::input::InputManager::initMappings(const engine::core::Config *confi
         {
             /* code */
             SDL_Scancode scancode = scancodeFromString(key_name);
-            Uint8 mouse_button = mouseButtonFromString(key_name);
+            Uint32 mouse_button = mouseButtonFromString(key_name);
 
             if (scancode != SDL_SCANCODE_UNKNOWN)
             {
                 /* code */
-                _scancode2action_map[scancode].push_back(action_name);
+                _input2action_map[scancode].push_back(action_name);
             }
             else if (mouse_button != 0)
             {
-                _mousebutton2action_map[mouse_button].push_back(action_name);
+                _input2action_map[mouse_button].push_back(action_name);
             }
             else
             {
@@ -199,7 +198,7 @@ SDL_Scancode engine::input::InputManager::scancodeFromString(const std::string &
     return SDL_GetScancodeFromName(key_name.c_str());
 }
 
-Uint8 engine::input::InputManager::mouseButtonFromString(const std::string &button_name)
+Uint32 engine::input::InputManager::mouseButtonFromString(const std::string &button_name)
 {
     if (button_name == "MouseLeft")
     {

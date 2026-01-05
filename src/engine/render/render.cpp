@@ -105,6 +105,66 @@ void engine::render::Renderer::drawParallx(const Camera &camera, const engine::r
     }
 }
 
+void engine::render::Renderer::drawUISprite(const engine::render::Sprite &sprite, const glm::vec2 &position, const std::optional<glm::vec2> &size)
+{
+    auto texture = _resource_manager->getTexture(sprite.getTextureId());
+    if (!texture)
+    {
+        spdlog::error("Texture not found:{}", sprite.getTextureId());
+        return;
+    }
+    auto src_rct = getSpriteSrcRect(sprite);
+    if (!src_rct.has_value())
+    {
+        spdlog::error("Invalid source rectangle:{}", sprite.getTextureId());
+        return;
+    }
+    SDL_FRect dest_rect = {position.x, position.y, 0, 0};
+    if (size.has_value())
+    {
+        dest_rect.w = size.value().x;
+        dest_rect.h = size.value().y;
+    }
+    else
+    {
+        dest_rect.w = src_rct.value().w;
+        dest_rect.h = src_rct.value().h;
+    }
+    if (!SDL_RenderTextureRotated(_renderer, texture, &src_rct.value(), &dest_rect, 0, nullptr, sprite.isFlipped() ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE))
+    {
+        spdlog::error("Render texture failed:{},{}", sprite.getTextureId(), SDL_GetError());
+    }
+}
+
+void engine::render::Renderer::present()
+{
+    SDL_RenderPresent(_renderer);
+}
+
+void engine::render::Renderer::clearScreen()
+{
+    if (!SDL_RenderClear(_renderer))
+    {
+        spdlog::error("Render clear failed:{}", SDL_GetError());
+    }
+}
+
+void engine::render::Renderer::setDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+    if (!SDL_SetRenderDrawColor(_renderer, r, g, b, a))
+    {
+        spdlog::error("Set render draw color failed:{}", SDL_GetError());
+    }
+}
+
+void engine::render::Renderer::setDrawColorFloat(float r, float g, float b, float a)
+{
+    if (!SDL_SetRenderDrawColorFloat(_renderer, r, g, b, a))
+    {
+        spdlog::error("Set render draw color failed:{}", SDL_GetError());
+    }
+}
+
 std::optional<SDL_FRect> engine::render::Renderer::getSpriteSrcRect(const Sprite &sprite)
 {
     SDL_Texture *texture = _resource_manager->getTexture(sprite.getTextureId());

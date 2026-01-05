@@ -4,7 +4,7 @@
 #include <vector>
 #include <SDL3/SDL_render.h>
 #include <glm/vec2.hpp>
-
+#include <variant>
 namespace engine::core
 {
     class Config;
@@ -27,8 +27,7 @@ namespace engine::input
         SDL_Renderer *_sdl_renderer{nullptr};
 
         std::unordered_map<std::string, std::vector<std::string>> _action2keyname_map;
-        std::unordered_map<SDL_Scancode, std::vector<std::string>> _scancode2action_map;
-        std::unordered_map<Uint8, std::vector<std::string>> _mousebutton2action_map;
+        std::unordered_map<std::variant<Uint32, SDL_Scancode>, std::vector<std::string>> _input2action_map;
         std::unordered_map<std::string, ActionState> _action_states{};
 
         bool _should_quit{false};
@@ -67,7 +66,7 @@ namespace engine::input
         void initMappings(const engine::core::Config *config);
         void updateActionStates(const std::string &action_name, bool is_input_active, bool is_reapt_event);
         SDL_Scancode scancodeFromString(const std::string &key_name);
-        Uint8 mouseButtonFromString(const std::string &button_name);
+        Uint32 mouseButtonFromString(const std::string &button_name);
     };
 
 }
