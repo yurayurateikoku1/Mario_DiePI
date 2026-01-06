@@ -11,10 +11,11 @@
 #include "../object/game_object.h"
 #include "../component/transform_component.h"
 #include "../component/sprite_component.h"
+#include "../scene/scene_manager.h"
+#include "../../game/scene/game_scene.h"
 #include "config.h"
 namespace engine::core
 {
-    engine::object::GameObject game_object("test_game_object");
     GameApp::GameApp()
     {
     }
@@ -174,6 +175,20 @@ namespace engine::core
         return true;
     }
 
+    bool GameApp::initSceneManager()
+    {
+        try
+        {
+            _scene_manager = std::make_unique<engine::scene::SceneManager>(*_context);
+        }
+        catch (const std::exception &e)
+        {
+            spdlog::error("SceneManager init failed: {},{},{}", e.what(), __FILE__, __LINE__);
+            return false;
+        }
+        return true;
+    }
+
     bool GameApp::init()
     {
         spdlog::info("GameApp init ...");
@@ -209,6 +224,14 @@ namespace engine::core
         {
             return false;
         }
+        if (!initSceneManager())
+        {
+            /* code */
+            return false;
+        }
+
+        auto scene = std::make_unique<game::scene::GameScene>("GameScene", *_context, *_scene_manager);
+        _scene_manager->requestPushScene(std::move(scene));
 
         _is_running = true;
         spdlog::info("GameApp init success");
@@ -227,13 +250,13 @@ namespace engine::core
 
     void GameApp::update([[maybe_unused]] float dt)
     {
+        _scene_manager->update(dt);
     }
 
     void GameApp::render()
     {
         _renderer->clearScreen();
-        testRenderer();
-        game_object.render(*_context);
+        _scene_manager->render();
         _renderer->present();
     }
 
@@ -253,10 +276,5 @@ namespace engine::core
 
         SDL_Quit();
         _is_running = false;
-    }
-    void GameApp::testRenderer()
-    {
-        game_object.addComponent<engine::component::TransformComponent>(glm::vec2(100.0f, 100.0f));
-        game_object.addComponent<engine::component::SpriteComponent>("assets/textures/Props/big-crate.png", *_resource_manager, engine::utils::Alignment::CENTER);
     }
 }
