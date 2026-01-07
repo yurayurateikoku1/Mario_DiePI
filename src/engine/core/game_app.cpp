@@ -41,6 +41,7 @@ namespace engine::core
             float dt = _time->getDeltaTime();
             _input_manager->update();
             handleEvents();
+            _scene_manager->handleInput();
             update(dt);
             render();
         }

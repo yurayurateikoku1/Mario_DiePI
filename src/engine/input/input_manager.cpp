@@ -156,10 +156,12 @@ void engine::input::InputManager::initMappings(const engine::core::Config *confi
             {
                 /* code */
                 _input2action_map[scancode].push_back(action_name);
+                spdlog::info("Mapped key '{}' (scancode: {}) to action '{}'", key_name, static_cast<int>(scancode), action_name);
             }
             else if (mouse_button != 0)
             {
                 _input2action_map[mouse_button].push_back(action_name);
+                spdlog::info("Mapped mouse button '{}' to action '{}'", key_name, action_name);
             }
             else
             {
