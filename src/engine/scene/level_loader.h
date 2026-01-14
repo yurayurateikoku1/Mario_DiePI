@@ -16,6 +16,9 @@ namespace engine::scene
 
         bool loadLevel(const std::string &map_path, Scene &scene);
 
+        const glm::ivec2 &getMapSize() const { return _map_size; }
+        const glm::ivec2 &getTileSize() const { return _tile_size; }
+
     private:
         std::string _map_path;
         glm::ivec2 _map_size;

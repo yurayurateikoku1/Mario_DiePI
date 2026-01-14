@@ -21,8 +21,8 @@ namespace engine::render
         /// @param texture_id
         /// @param source_rect
         /// @param is_flipped
-        Sprite(const std::string &texture_id, std::optional<SDL_Rect> source_rect = std::nullopt, bool is_flipped = false)
-            : _texture_id(texture_id), _source_rect(source_rect), _is_flipped(is_flipped) {}
+        Sprite(const std::string &texture_id, std::optional<SDL_Rect> source_rect = std::nullopt, bool is_flipped = false);
+
         const std::string &getTextureId() const { return _texture_id; }
         const std::optional<SDL_Rect> &getSourceRect() const { return _source_rect; }
         bool isFlipped() const { return _is_flipped; }

@@ -149,6 +149,67 @@ void engine::scene::LevelLoader::loadTileLayer(const nlohmann::json &layer_json,
 
 void engine::scene::LevelLoader::loadObjectLayer(const nlohmann::json &layer_json, Scene &scene)
 {
+    spdlog::info("Loading object layer: {}", layer_json.value("name", "Unamed"));
+
+    if (!layer_json.contains("objects") || !layer_json["objects"].is_array())
+    {
+        spdlog::error("ObjectLayer objects missing or not an array: {}", layer_json.value("name", "Unamed"));
+        return;
+    }
+
+    const auto &objects = layer_json["objects"];
+    spdlog::info("Found {} objects in layer", objects.size());
+
+    for (const auto &object : objects)
+    {
+        /* code */
+        auto gid = object.value("gid", 0);
+        const std::string &object_name = object.value("name", "Unamed");
+        spdlog::info("Processing object: {} (gid: {})", object_name, gid);
+
+        // 如果gid为0 代表绘制的形状 可能是碰撞盒 触发器
+        if (gid == 0)
+        {
+                }
+        else
+        {
+            auto tile_info = getTileInfoByGid(gid);
+            if (tile_info.sprite.getTextureId().empty())
+            {
+                spdlog::error("Failed to find tileset for gid: {}", gid);
+                continue;
+            }
+            auto position = glm::vec2(object.value("x", 0.0f), object.value("y", 0.0f));
+            auto dst_size = glm::vec2(object.value("width", 0.0f), object.value("height", 0.0f));
+
+            spdlog::info("Object {} original position: ({}, {}), size: ({}, {})",
+                object_name, position.x, position.y, dst_size.x, dst_size.y);
+
+            // Tiled 对象的 Y 坐标是底部位置，转换为顶部位置
+            position = glm::vec2(position.x, position.y - dst_size.y);
+
+            auto rotation = object.value("rotation", 0.0f);
+            auto src_size_opt = tile_info.sprite.getSourceRect();
+            if (!src_size_opt)
+            {
+                spdlog::error("Failed to find source rect for gid: {}", gid);
+                continue;
+            }
+
+            auto src_size = glm::vec2(src_size_opt->w, src_size_opt->h);
+            auto scale = dst_size / src_size;
+
+            spdlog::info("Object {} adjusted position: ({}, {}), scale: ({}, {}), src_size: ({}, {})",
+                object_name, position.x, position.y, scale.x, scale.y, src_size.x, src_size.y);
+
+            auto game_object = std::make_unique<engine::object::GameObject>(object_name);
+            game_object->addComponent<engine::component::TransformComponent>(position, scale, rotation);
+            game_object->addComponent<engine::component::SpriteComponent>(std::move(tile_info.sprite), scene.getContext().getResourceManager());
+
+            scene.addGameObject(std::move(game_object));
+            spdlog::info("Object loaded: {}", object_name);
+        }
+    }
 }
 
 std::string engine::scene::LevelLoader::reslovePath(const std::string &relative_path, const std::string &file_path)
@@ -222,21 +283,22 @@ engine::component::TileInfo engine::scene::LevelLoader::getTileInfoByGid(int gid
             auto tile_id = tile.value("id", 0);
             if (tile_id == local_id)
             {
-                if (!tiles_json.contains("image"))
+                if (!tile.contains("image"))
                 {
-                    spdlog::error("Tileset file {} does not contain image", tileset_it->first, tile_id);
+                    spdlog::error("Tile {} in tileset {} does not contain image", tile_id, tileset_it->first);
                     return engine::component::TileInfo();
                 }
-                auto texture_id = reslovePath(tiles_json["image"].get<std::string>(), file_path);
+                auto texture_id = reslovePath(tile["image"].get<std::string>(), file_path);
 
-                auto image_width = tiles_json.value("imageheight", 0);
-                auto image_height = tiles_json.value("imagewidth", 0);
+                // 使用 tile 的 width 和 height，而不是整个图像的大小
+                auto tile_width = tile.value("width", _tile_size.x);
+                auto tile_height = tile.value("height", _tile_size.y);
 
                 SDL_Rect texture_rect = {
-                    tiles_json.value("x", 0),
-                    tiles_json.value("y", 0),
-                    tiles_json.value("width", image_width),
-                    tiles_json.value("height", image_height)};
+                    0,
+                    0,
+                    tile_width,
+                    tile_height};
 
                 engine::render::Sprite sprite{texture_id, std::make_optional(texture_rect), false};
                 return engine::component::TileInfo(sprite, engine::component::TileType::NORMAL);

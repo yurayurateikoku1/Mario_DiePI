@@ -19,6 +19,21 @@ void game::scene::GameScene::init()
 {
     engine::scene::LevelLoader level_loader;
     level_loader.loadLevel("assets/maps/level1.tmj", *this);
+
+    // 设置相机边界为地图大小
+    auto map_size = level_loader.getMapSize();
+    auto tile_size = level_loader.getTileSize();
+    glm::vec2 world_size = glm::vec2(map_size.x * tile_size.x, map_size.y * tile_size.y);
+
+    engine::utils::Rect camera_bounds;
+    camera_bounds.position = glm::vec2(0.0f, 0.0f);
+    camera_bounds.size = world_size;
+
+    _context.getCamera().setLimitBounds(camera_bounds);
+    spdlog::info("Camera bounds set to: ({}, {}) - ({}, {})",
+        camera_bounds.position.x, camera_bounds.position.y,
+        camera_bounds.size.x, camera_bounds.size.y);
+
     createTestObject();
     Scene::init();
 }

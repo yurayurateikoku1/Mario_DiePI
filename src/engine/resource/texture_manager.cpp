@@ -21,6 +21,13 @@ SDL_Texture *engine::resource::TextureManager::loadTexture(const std::string &fi
         return it->second.get();
     }
     SDL_Texture *raw_texture = IMG_LoadTexture(_renderer, file_path.c_str());
+
+    if (!SDL_SetTextureScaleMode(raw_texture, SDL_SCALEMODE_NEAREST))
+    {
+        /* code */
+        spdlog::warn("Set texture scale mode failed: {}", file_path);
+    }
+
     if (!raw_texture)
     {
         spdlog::error("Load texture failed: {} , SDL error: {}", file_path, SDL_GetError());

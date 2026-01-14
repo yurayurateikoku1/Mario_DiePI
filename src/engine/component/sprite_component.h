@@ -42,6 +42,10 @@ namespace engine::component
                         engine::utils::Alignment alignment = engine::utils::Alignment::NONE,
                         std::optional<SDL_Rect> source_rect = std::nullopt,
                         bool is_flipped = false);
+
+        SpriteComponent(engine::render::Sprite &&sprite,
+                        engine::resource::ResourceManager &resource_manager,
+                        engine::utils::Alignment alignment = engine::utils::Alignment::NONE);
         ~SpriteComponent() override = default;
         SpriteComponent(const SpriteComponent &) = delete;
         SpriteComponent &operator=(const SpriteComponent &) = delete;

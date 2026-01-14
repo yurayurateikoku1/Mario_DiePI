@@ -15,6 +15,15 @@ engine::component::SpriteComponent::SpriteComponent(const std::string &texture_i
     }
 }
 
+engine::component::SpriteComponent::SpriteComponent(engine::render::Sprite &&sprite, engine::resource::ResourceManager &resource_manager, engine::utils::Alignment alignment)
+    : _resourceManager(&resource_manager), _alignment(alignment), _sprite(std::move(sprite))
+{
+    if (!_resourceManager)
+    {
+        spdlog::error("ResourceManager is not initialized.");
+    }
+}
+
 void engine::component::SpriteComponent::updateOffset()
 {
     if (_sprite_size.x <= 0 || _sprite_size.y <= 0)
